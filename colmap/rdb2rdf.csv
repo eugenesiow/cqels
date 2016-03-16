@@ -1,0 +1,6 @@
+DewPoint,http://knoesis.wright.edu/ssw/ont/weather.owl#TemperatureObservation,http://knoesis.wright.edu/ssw/ont/weather.owl#_DewPoint,http://knoesis.wright.edu/ssw/ont/weather.owl#fahrenheit
+WindSpeed,http://knoesis.wright.edu/ssw/ont/weather.owl#WindSpeedObservation,http://knoesis.wright.edu/ssw/ont/weather.owl#_WindSpeed,http://knoesis.wright.edu/ssw/ont/weather.owl#milesPerHour
+SoilTemperature,http://knoesis.wright.edu/ssw/ont/weather.owl#TemperatureObservation,http://knoesis.wright.edu/ssw/ont/weather.owl#_SoilTemperature,http://knoesis.wright.edu/ssw/ont/weather.owl#fahrenheit
+RelativeHumidity,http://knoesis.wright.edu/ssw/ont/weather.owl#RelativeHumidityObservation,http://knoesis.wright.edu/ssw/ont/weather.owl#_RelativeHumidity,http://knoesis.wright.edu/ssw/ont/weather.owl#percent
+WindDirection,http://knoesis.wright.edu/ssw/ont/weather.owl#WindDirectionObservation,http://knoesis.wright.edu/ssw/ont/weather.owl#_WindDirection,http://knoesis.wright.edu/ssw/ont/weather.owl#degrees
+AirTemperature,http://knoesis.wright.edu/ssw/ont/weather.owl#TemperatureObservation,http://knoesis.wright.edu/ssw/ont/weather.owl#_AirTemperature,http://knoesis.wright.edu/ssw/ont/weather.owl#fahrenheit
