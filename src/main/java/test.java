@@ -26,6 +26,7 @@ public class test {
 	private static final String STREAM_ID = "http://www.cwi.nl/SRBench/observations";
     private static final String CQELS_HOME = "cqels_home";
     private static ExecContext context;
+    private static int MAX_EVENTS = 0;
 
 	public static void main(String[] args) {
 		File home = new File(CQELS_HOME);
@@ -34,7 +35,7 @@ public class test {
         }
         context = new ExecContext(CQELS_HOME, true);
         
-        String fileName = "queries/q1.sparql";
+        String fileName = "queries/q4.sparql";
         if (args.length > 0) {
         	fileName = args[0];
         }
@@ -53,6 +54,9 @@ public class test {
         long sleepTime = 1000;
         if (args.length > 4) {
         	sleepTime = Long.parseLong(args[4]);
+        }
+        if (args.length > 5) {
+        	MAX_EVENTS = Integer.parseInt(args[5]);
         }
         
         File queryFile = new File(fileName);
@@ -100,7 +104,8 @@ public class test {
 				headerList.add(header[i]);
 			}
 			String line="";
-			while((line=br.readLine())!=null) {
+			int count = 0;
+			while((line=br.readLine())!=null && count<MAX_EVENTS) {
 				String[] parts = line.split(",");
 				Model model = ModelFactory.createDefaultModel();
 				Resource instant = model.createResource();
@@ -134,11 +139,13 @@ public class test {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+				count++;
 		        
 		        for(Mapping mapping:mappings) {
 		        	List<Node> nodes = toNodeList(context, mapping);
 //		        	for(Node node:nodes) {
-//		        		System.out.println(node.toString());
+//		        		if(node!=null)
+//		        			System.out.println(node.toString());
 //		        	}
 		        }
 		        
