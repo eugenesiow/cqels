@@ -8,13 +8,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.deri.cqels.data.Mapping;
 import org.deri.cqels.engine.ContinuousSelect;
 import org.deri.cqels.engine.ExecContext;
-import org.deri.cqels.engine.RDFStream;
 
 import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.Triple;
+
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -33,38 +33,43 @@ public class test {
             home.mkdir();
         }
         context = new ExecContext(CQELS_HOME, true);
-        simpleSelect();
+        
+        String fileName = "queries/q1.sparql";
+        if (args.length > 0) {
+        	fileName = args[0];
+        }
+        String colMapPath = "colmap/rdb2rdf.csv";
+        if (args.length > 1) {
+        	colMapPath = args[1];
+        }
+        String folderPath = "/Users/eugene/Downloads/knoesis_observations_ike_csv/";
+        if (args.length > 2) {
+        	folderPath = args[2];
+        }
+        String stationName = "AIRGL";
+        if (args.length > 3) {
+        	stationName = args[3];
+        }
+        long sleepTime = 1000;
+        if (args.length > 4) {
+        	sleepTime = Long.parseLong(args[4]);
+        }
+        
+        File queryFile = new File(fileName);
+        String queryStr = "";
+        try {
+			queryStr = FileUtils.readFileToString(queryFile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        
+        simpleSelect(queryStr,colMapPath,folderPath,stationName,sleepTime);
 	}
 	
-	public static void simpleSelect() {
+	public static void simpleSelect(String queryStr, String colMapPath, String folderPath, String stationName,long sleepTime) {
         DefaultRDFStream stream = new DefaultRDFStream(context, STREAM_ID);
 
-//        ContinuousSelect query = context.registerSelect("PREFIX om-owl: <http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#>\n" + 
-//        		"PREFIX weather: <http://knoesis.wright.edu/ssw/ont/weather.owl#>\n" + 
-//        		"\n" + 
-//        		"SELECT DISTINCT ?sensor ?value ?uom\n" + 
-//        		"WHERE {\n" + 
-//        		"  STREAM <http://www.cwi.nl/SRBench/observations> [RANGE 3600s]\n" + 
-//        		"            \n" + 
-//        		"  {?observation om-owl:procedure ?sensor ;\n" + 
-//        		"               a weather:TemperatureObservation ;\n" + 
-//        		"               om-owl:result ?result. "
-//        		+ "?result om-owl:floatValue ?value;"
-//        		+ "om-owl:uom ?uom}\n"+
-//        		"}");
-        ContinuousSelect query = context.registerSelect("PREFIX om-owl: <http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#>\n" + 
-        		"PREFIX weather: <http://knoesis.wright.edu/ssw/ont/weather.owl#>\n" + 
-        		"PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n" + 
-        		"\n" + 
-        		"SELECT ?sensor MIN(?value)\n" + 
-        		"WHERE {\n" + 
-        		"STREAM <http://www.cwi.nl/SRBench/observations> [RANGE 10800s SLIDE 600s]\n" + 
-        		"  {?observation om-owl:procedure ?sensor ;\n" + 
-        		"               om-owl:observedProperty weather:_WindSpeed ;\n" + 
-        		"               om-owl:result [ om-owl:floatValue ?value ] .}\n" + 
-        		"}              \n" + 
-        		"GROUP BY ?sensor\n" +
-        		"HAVING ( MIN(?value) >= \"0.0\" ) #milesPerHour");
+        ContinuousSelect query = context.registerSelect(queryStr);
         SelectAssertListener listener = new SelectAssertListener();
         query.register(listener);
 
@@ -72,7 +77,6 @@ public class test {
         Map<String,String> classType = new HashMap<String,String>();
         Map<String,String> property = new HashMap<String,String>();
         
-        String colMapPath = "colmap/rdb2rdf.csv";
         try {
 	        BufferedReader br = new BufferedReader(new FileReader(colMapPath));
 	        String line="";
@@ -88,8 +92,6 @@ public class test {
         	e.printStackTrace();
         }
         
-        String folderPath = "/Users/eugene/Downloads/knoesis_observations_ike_csv/";
-        String stationName = "AIRGL";
         try {
 			BufferedReader br = new BufferedReader(new FileReader(folderPath + stationName + ".csv"));
 			String[] header = br.readLine().split(",");
@@ -135,13 +137,13 @@ public class test {
 		        
 		        for(Mapping mapping:mappings) {
 		        	List<Node> nodes = toNodeList(context, mapping);
-		        	for(Node node:nodes) {
-		        		System.out.println(node.toString());
-		        	}
+//		        	for(Node node:nodes) {
+//		        		System.out.println(node.toString());
+//		        	}
 		        }
 		        
 		        System.out.println(System.currentTimeMillis() - startTime);
-		        Thread.sleep(1000);
+		        Thread.sleep(sleepTime);
 			}
 			
 			br.close();

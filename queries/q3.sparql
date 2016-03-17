@@ -1,0 +1,15 @@
+PREFIX om-owl: <http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#>
+PREFIX weather: <http://knoesis.wright.edu/ssw/ont/weather.owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?sensor MIN(?value)
+WHERE {
+	STREAM <http://www.cwi.nl/SRBench/observations> [RANGE 10800s SLIDE 600s]
+  	{
+	  	?observation om-owl:procedure ?sensor ;
+	  		om-owl:observedProperty weather:_WindSpeed ;
+	  		om-owl:result [ om-owl:floatValue ?value ] .
+	}
+}              
+GROUP BY ?sensor
+HAVING ( MIN(?value) >= "0.0" ) #milesPerHour
