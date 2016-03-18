@@ -26,7 +26,7 @@ public class test {
 	private static final String STREAM_ID = "http://www.cwi.nl/SRBench/observations";
     private static final String CQELS_HOME = "cqels_home";
     private static ExecContext context;
-    private static int MAX_EVENTS = 0;
+    private static int MAX_EVENTS = 101;
 
 	public static void main(String[] args) {
 		File home = new File(CQELS_HOME);
@@ -35,11 +35,12 @@ public class test {
         }
         context = new ExecContext(CQELS_HOME, true);
         
-        String fileName = "queries/q4.sparql";
+        
+        String fileName = "queries/q10.sparql";
         if (args.length > 0) {
         	fileName = args[0];
         }
-        String colMapPath = "colmap/rdb2rdf.csv";
+        String colMapPath = "colmap/alpha.csv";
         if (args.length > 1) {
         	colMapPath = args[1];
         }
@@ -47,7 +48,7 @@ public class test {
         if (args.length > 2) {
         	folderPath = args[2];
         }
-        String stationName = "AIRGL";
+        String stationName = "ALPHA";
         if (args.length > 3) {
         	stationName = args[3];
         }
@@ -58,6 +59,11 @@ public class test {
         if (args.length > 5) {
         	MAX_EVENTS = Integer.parseInt(args[5]);
         }
+        String defaultDataset = "colmap/ALPHA_meta.nt";
+        if (args.length > 6) {
+        	defaultDataset = args[6];
+        }
+        context.loadDefaultDataset(defaultDataset);
         
         File queryFile = new File(fileName);
         String queryStr = "";
@@ -115,6 +121,7 @@ public class test {
 					Resource obs = model.createResource();
 					Resource result = model.createResource();
 					String colHead = headerList.get(j-1);
+					String uomStr = uom.get(colHead);
 					//add ssn structure
 					model.add(obs,RDF.type,model.createResource(classType.get(colHead)));
 					model.add(obs,model.createProperty("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#result"),result);
@@ -122,9 +129,14 @@ public class test {
 					model.add(sensor,model.createProperty("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#generatedObservation"),obs);
 					model.add(obs,model.createProperty("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#observedProperty"),model.createResource(property.get(colHead)));
 					model.add(obs,model.createProperty("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#samplingTime"),instant);
-					model.add(result,RDF.type,model.createResource("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#MeasureData"));
-					model.add(result,model.createProperty("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#floatValue"),model.createLiteral(parts[j]));
-					model.add(result,model.createProperty("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#uom"),model.createResource(uom.get(colHead)));
+					if(!uomStr.equals("bool")) {
+						model.add(result,RDF.type,model.createResource("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#MeasureData"));
+						model.add(result,model.createProperty("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#floatValue"),model.createLiteral(parts[j]));
+						model.add(result,model.createProperty("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#uom"),model.createResource(uomStr));
+					} else {
+						model.add(result,RDF.type,model.createResource("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#TruthData"));
+						model.add(result,model.createProperty("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#booleanValue"),model.createLiteral(parts[j]));
+					}
 					model.add(instant,RDF.type,model.createResource("http://www.w3.org/2006/time#Instant"));
 					model.add(instant,model.createProperty("http://www.w3.org/2006/time#inXSDDateTime"),model.createLiteral("_"+stationName+".time"));
 				}
@@ -139,6 +151,7 @@ public class test {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+
 				count++;
 		        
 		        for(Mapping mapping:mappings) {

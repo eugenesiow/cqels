@@ -1,0 +1,27 @@
+PREFIX om-owl: <http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#>
+PREFIX weather: <http://knoesis.wright.edu/ssw/ont/weather.owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl-time: <http://www.w3.org/2006/time#>
+PREFIX wgs84_pos: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+
+SELECT ( MIN(?windSpeed) as ?windForce )
+       ( MIN(?windDirection) AS ?avgWindDirection )
+WHERE {
+	STREAM <http://www.cwi.nl/SRBench/observations> [RANGE 3600s] {
+	  ?sensor om-owl:generatedObservation ?o1 ;
+	          om-owl:generatedObservation ?o2 .
+	  ?o1 a weather:WindDirectionObservation ;
+	      om-owl:observedProperty weather:_WindDirection ;
+	      om-owl:result ?result1.
+	      ?result1 om-owl:floatValue ?windDirection.
+	  ?o2 a weather:WindSpeedObservation ;
+	      om-owl:observedProperty weather:_WindSpeed ;
+	      om-owl:result ?result2.
+	      ?result2 om-owl:floatValue ?windSpeed.
+  }
+  	?sensor om-owl:processLocation ?sensorLocation.
+	?sensorLocation wgs84_pos:alt "4101.0" ;
+              wgs84_pos:lat "42.16472" ;
+              wgs84_pos:long "-121.755" .
+}
+GROUP BY ?sensor

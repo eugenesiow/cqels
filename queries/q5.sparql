@@ -1,0 +1,21 @@
+PREFIX om-owl: <http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#>
+PREFIX weather: <http://knoesis.wright.edu/ssw/ont/weather.owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?sensor
+WHERE {
+  STREAM <http://www.cwi.nl/SRBench/observations> [RANGE 10800s SLIDE 600s]
+  { 
+	?sensor om-owl:generatedObservation [a weather:SnowfallObservation] ;
+		om-owl:generatedObservation ?o1 ;
+		om-owl:generatedObservation ?o2 .
+	?o1 a weather:TemperatureObservation ;
+		om-owl:observedProperty weather:_AirTemperature ;
+		om-owl:result [om-owl:floatValue ?temperature] .
+	?o2 a weather:WindSpeedObservation ;
+		om-owl:observedProperty weather:_WindSpeed ;
+		om-owl:result [om-owl:floatValue ?windSpeed] .
+  }               
+} GROUP BY ?sensor
+HAVING ( MIN(?temperature) > "0.0"  &&  # fahrenheit
+	MIN(?windSpeed) > "0.0" ) #milesPerHour

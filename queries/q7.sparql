@@ -1,0 +1,14 @@
+PREFIX om-owl: <http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX owl-time: <http://www.w3.org/2006/time#>
+
+SELECT ?sensor
+WHERE {
+    STREAM <http://www.cwi.nl/SRBench/observations> [RANGE 3600s] {
+        ?sensor om-owl:generatedObservation ?observation.
+        ?observation om-owl:samplingTime ?instant .
+        ?instant owl-time:inXSDDateTime ?time .
+	}
+}
+GROUP BY ?sensor
+HAVING (count(?time) = 0)

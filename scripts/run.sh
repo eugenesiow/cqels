@@ -1,1 +1,2 @@
-java -Xmx700m -cp cqels-1.1.1-SNAPSHOT.jar test queries/q1.sparql colmap/rdb2rdf.csv ../knoesis_observations_ike_csv/ AIRGL 1000 > output/q1.txt
+#java -Xmx700m -cp cqels-1.1.1-SNAPSHOT.jar test queries/q1.sparql colmap/rdb2rdf.csv ../knoesis_observations_ike_csv/ AIRGL 1000 > output/q1.txt
+java -Xmx700m -cp cqels-1.1.1-SNAPSHOT.jar test queries/q$1.sparql colmap/alpha.csv ../knoesis_observations_ike_csv/ ALPHA 1000 101 colmap/ALPHA_meta.nt > output/q$1.txt
