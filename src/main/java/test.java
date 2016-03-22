@@ -14,7 +14,6 @@ import org.deri.cqels.engine.ContinuousSelect;
 import org.deri.cqels.engine.ExecContext;
 
 import com.hp.hpl.jena.graph.Node;
-
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -36,7 +35,7 @@ public class test {
         context = new ExecContext(CQELS_HOME, true);
         
         
-        String fileName = "queries/q4.sparql";
+        String fileName = "queries/q1.sparql";
         if (args.length > 0) {
         	fileName = args[0];
         }
@@ -52,7 +51,7 @@ public class test {
         if (args.length > 3) {
         	stationName = args[3];
         }
-        long sleepTime = 1000;
+        long sleepTime = 0;
         if (args.length > 4) {
         	sleepTime = Long.parseLong(args[4]);
         }
@@ -165,8 +164,9 @@ public class test {
 		        System.out.println(System.currentTimeMillis() - startTime);
 		        Thread.sleep(sleepTime);
 			}
-			
 			br.close();
+			System.exit(0);
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
