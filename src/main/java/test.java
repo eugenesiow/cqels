@@ -36,7 +36,7 @@ public class test {
         context = new ExecContext(CQELS_HOME, true);
         
         
-        String fileName = "queries/q10.sparql";
+        String fileName = "queries/q4.sparql";
         if (args.length > 0) {
         	fileName = args[0];
         }

@@ -2,7 +2,7 @@ PREFIX om-owl: <http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#>
 PREFIX weather: <http://knoesis.wright.edu/ssw/ont/weather.owl#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-SELECT ?sensor (MIN(?temperature) as ?avgTemp) (MIN(?windSpeed) as ?avgWindSpeed)
+SELECT DISTINCT ?sensor (MIN(?temperature) as ?avgTemp) (MIN(?windSpeed) as ?avgWindSpeed)
 WHERE {
 	STREAM <http://www.cwi.nl/SRBench/observations> [RANGE 3600s SLIDE 600s]
   	{
