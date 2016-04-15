@@ -4,13 +4,12 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 SELECT DISTINCT ?sensor (MIN(?temperature) as ?avgTemp) (MIN(?windSpeed) as ?avgWindSpeed)
 WHERE {
-	STREAM <http://www.cwi.nl/SRBench/observations> [RANGE 3600s SLIDE 600s]
+	STREAM <http://www.cwi.nl/SRBench/observations> [RANGE 3600s]
   	{
 	  	?temperatureObservation om-owl:procedure ?sensor ;
                           a weather:TemperatureObservation ;
                           om-owl:result ?temperatureResult  .
-        ?temperatureResult om-owl:floatValue ?temperature ;
-                     om-owl:uom ?uom .
+        ?temperatureResult om-owl:floatValue ?temperature.
         ?windSpeedObservation om-owl:procedure ?sensor ;
                         a weather:WindSpeedObservation ;
                         om-owl:result [ om-owl:floatValue ?windSpeed ]  .

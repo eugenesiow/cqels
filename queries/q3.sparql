@@ -12,4 +12,4 @@ WHERE {
 	}
 }              
 GROUP BY ?sensor
-HAVING ( AVG(?value) >= "0.0" ) #milesPerHour
+HAVING ( MIN(?value) >= "0.0" ) #milesPerHour

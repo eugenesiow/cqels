@@ -21,7 +21,7 @@ import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 
-public class test {
+public class testSmartHome {
 	private static final String STREAM_ID = "http://www.cwi.nl/SRBench/observations";
     private static final String CQELS_HOME = "cqels_home";
     private static ExecContext context;
