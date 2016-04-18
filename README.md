@@ -15,6 +15,7 @@ It was orginially forked from the CQELS respository on [Google Code](https://cod
 8. `./run.sh 1 10 1000` where the first 2 parameters are the queries to run from (e.g. q1 to q10) and the 3rd parameter is the delay (in ms) between events. 
 9. Results will be output as `output/q1.txt` and so on. Each line in the output is the time taken from the event being sent to the stream to the result being received through the callable.
 10. You can also run  `./run_count.sh 1 10 1000` which will export `time_taken:results_count` instead.
+11. You can also run  `./run_smarthome.sh 1 2 1000` which run the smarthome analytics benchmark. Note: only queries 1 and 2 are fully supported. For query 3 the FILTER doesn't work with CQELS and has been removed (you can execute the version without). This will require the [smarthome data in csv](https://github.com/eugenesiow/ldanalytics-PiSmartHome/releases/download/data/smarthome_data.zip) to stream.
 
 ### Other Projects
 * [LSD-ETL](https://github.com/eugenesiow/lsd-ETL)

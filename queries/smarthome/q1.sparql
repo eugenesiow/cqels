@@ -1,0 +1,14 @@
+PREFIX ssn: <http://purl.oclc.org/NET/ssnx/ssn#>
+PREFIX iotsn: <http://iot.soton.ac.uk/smarthome/sensor#>
+PREFIX iot: <http://purl.oclc.org/NET/iot#>
+
+SELECT (min(?val) as ?sval)
+WHERE {
+	STREAM <http://iot.soton.ac.uk/smarthome/observations> [RANGE 3600s] {
+		  ?obs ssn:observedBy iotsn:environmental1;
+		    ssn:observationResult ?snout.
+		  ?snout ssn:hasValue ?obsval.
+		  ?obsval a iot:InternalTemperatureValue;
+		    iot:hasQuantityValue ?val.
+   }
+}

@@ -2,7 +2,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -22,7 +24,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
 
 
 public class testSmartHome {
-	private static final String STREAM_ID = "http://www.cwi.nl/SRBench/observations";
+	private static final String STREAM_ID = "http://iot.soton.ac.uk/smarthome/observations";
     private static final String CQELS_HOME = "cqels_home";
     private static ExecContext context;
     private static int MAX_EVENTS = 101;
@@ -35,21 +37,21 @@ public class testSmartHome {
         context = new ExecContext(CQELS_HOME, true);
         
         
-        String fileName = "queries/q1.sparql";
+        String fileName = "queries/smarthome/q3.sparql";
         if (args.length > 0) {
         	fileName = args[0];
         }
-        String colMapPath = "colmap/alpha.csv";
+        String envPath = "/Users/eugene/Downloads/homeA-all/homeA-environmental/all-environmental-sort.csv";
         if (args.length > 1) {
-        	colMapPath = args[1];
+        	envPath = args[1];
         }
-        String folderPath = "/Users/eugene/Downloads/knoesis_observations_ike_csv/";
+        String meterPath = "/Users/eugene/Downloads/homeA-all/homeA-meter/all-meter-replace.csv";
         if (args.length > 2) {
-        	folderPath = args[2];
+        	meterPath = args[2];
         }
-        String stationName = "ALPHA";
+        String motionPath = "/Users/eugene/Downloads/homeA-all/homeA-motion/all-motion-replace.csv";
         if (args.length > 3) {
-        	stationName = args[3];
+        	motionPath = args[3];
         }
         long sleepTime = 0;
         if (args.length > 4) {
@@ -58,14 +60,9 @@ public class testSmartHome {
         if (args.length > 5) {
         	MAX_EVENTS = Integer.parseInt(args[5]);
         }
-        String defaultDataset = "colmap/ALPHA_meta.nt";
-        if (args.length > 6) {
-        	defaultDataset = args[6];
-        }
-        context.loadDefaultDataset(defaultDataset);
         Boolean printCount = false;
-        if(args.length > 7) {
-        	printCount=Boolean.parseBoolean(args[7]);
+        if(args.length > 6) {
+        	printCount=Boolean.parseBoolean(args[6]);
         }
         
         File queryFile = new File(fileName);
@@ -76,74 +73,100 @@ public class testSmartHome {
 			e.printStackTrace();
 		}
         
-        simpleSelect(queryStr,colMapPath,folderPath,stationName,sleepTime,printCount);
+        simpleSelect(queryStr,envPath,meterPath,motionPath,sleepTime,printCount);
 	}
 	
-	public static void simpleSelect(String queryStr, String colMapPath, String folderPath, String stationName,long sleepTime, Boolean printCount) {
+	public static void simpleSelect(String queryStr, String envPath, String meterPath, String motionPath,long sleepTime,Boolean printCount) {
         DefaultRDFStream stream = new DefaultRDFStream(context, STREAM_ID);
 
         ContinuousSelect query = context.registerSelect(queryStr);
         SelectAssertListener listener = new SelectAssertListener();
         query.register(listener);
-
-        Map<String,String> uom = new HashMap<String,String>();
-        Map<String,String> classType = new HashMap<String,String>();
-        Map<String,String> property = new HashMap<String,String>();
-        
+       
         try {
-	        BufferedReader br = new BufferedReader(new FileReader(colMapPath));
-	        String line="";
-	        while((line=br.readLine())!=null) {
-	        	String[] parts = line.split(",");
-	        	classType.put(parts[0], parts[1]);
-	        	property.put(parts[0], parts[2]);
-	        	uom.put(parts[0], parts[3]);
-	        }
-	        br.close();
-        }
-        catch(IOException e) {
-        	e.printStackTrace();
-        }
-        
-        try {
-			BufferedReader br = new BufferedReader(new FileReader(folderPath + stationName + ".csv"));
-			String[] header = br.readLine().split(",");
-			List<String> headerList = new ArrayList<String>();
-			for(int i=1;i<header.length;i++) {
-				headerList.add(header[i]);
-			}
-			String line="";
-			int count = 0;
-			while((line=br.readLine())!=null && count<MAX_EVENTS) {
-				String[] parts = line.split(",");
-				Model model = ModelFactory.createDefaultModel();
-				Resource instant = model.createResource();
-				Resource sensor = model.createResource("http://knoesis.wright.edu/ssw/System_"+stationName);
+			BufferedReader br1 = new BufferedReader(new FileReader(envPath));
+			BufferedReader br2 = new BufferedReader(new FileReader(meterPath));
+			BufferedReader br3 = new BufferedReader(new FileReader(motionPath));
+			String line1,line2,line3 = "";		
+			Map<String,Resource> meters = new HashMap<String,Resource>();
+			Map<String,Resource> motions = new HashMap<String,Resource>();
+			
+        	for(int i=0;i<MAX_EVENTS;i++) {
+        		Model model = ModelFactory.createDefaultModel();        		
+        		line1=br1.readLine();
+        		String[] line1Parts = line1.split(",");
+        		
+        		Resource sensor = model.createResource("http://iot.soton.ac.uk/smarthome/sensor#environmental1");
+        		Resource obs = model.createResource();
+        		Resource result = model.createResource();
+        		
+        		model.add(obs,RDF.type,model.createResource("http://purl.oclc.org/NET/iot#WeatherObservation"));        		
+				model.add(obs,model.createProperty("http://purl.oclc.org/NET/ssnx/ssn#observationResult"),result);
+				model.add(obs,model.createProperty("http://purl.oclc.org/NET/ssnx/ssn#observedBy"),sensor);
 				
-				for(int j=1;j<parts.length;j++) {
-					Resource obs = model.createResource();
-					Resource result = model.createResource();
-					String colHead = headerList.get(j-1);
-					String uomStr = uom.get(colHead);
-					//add ssn structure
-					model.add(obs,RDF.type,model.createResource(classType.get(colHead)));
-					model.add(obs,model.createProperty("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#result"),result);
-					model.add(obs,model.createProperty("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#procedure"),sensor);
-					model.add(sensor,model.createProperty("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#generatedObservation"),obs);
-					model.add(obs,model.createProperty("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#observedProperty"),model.createResource(property.get(colHead)));
-					model.add(obs,model.createProperty("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#samplingTime"),instant);
-					if(!uomStr.equals("bool")) {
-						model.add(result,RDF.type,model.createResource("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#MeasureData"));
-						model.add(result,model.createProperty("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#floatValue"),model.createLiteral(parts[j]));
-						model.add(result,model.createProperty("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#uom"),model.createResource(uomStr));
-					} else {
-						model.add(result,RDF.type,model.createResource("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#TruthData"));
-						model.add(result,model.createProperty("http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#booleanValue"),model.createLiteral(parts[j]));
-					}
-					model.add(instant,RDF.type,model.createResource("http://www.w3.org/2006/time#Instant"));
-					model.add(instant,model.createProperty("http://www.w3.org/2006/time#inXSDDateTime"),model.createLiteral("_"+stationName+".time"));
+				Resource value1 = model.createResource();
+        		Resource value2 = model.createResource();
+				model.add(result,RDF.type,model.createResource("http://purl.oclc.org/NET/iot#WeatherSensorOutput"));        		
+				model.add(result,model.createProperty("http://purl.oclc.org/NET/ssnx/ssn#hasValue"),value1);
+				model.add(result,model.createProperty("http://purl.oclc.org/NET/ssnx/ssn#hasValue"),value2);
+				model.add(result,model.createProperty("http://purl.oclc.org/NET/ssnx/ssn#isProducedBy"),sensor);
+				
+				model.add(value1,RDF.type,model.createResource("http://purl.oclc.org/NET/iot#InternalTemperatureValue"));        		
+				model.add(value1,model.createProperty("http://purl.oclc.org/NET/iot#hasQuantityValue"),model.createLiteral(line1Parts[1].trim()));
+				model.add(value2,RDF.type,model.createResource("http://purl.oclc.org/NET/iot#ExternalTemperatureValue"));        		
+				model.add(value2,model.createProperty("http://purl.oclc.org/NET/iot#hasQuantityValue"),model.createLiteral(line1Parts[2].trim()));
+		
+        		line2=br2.readLine();
+				String[] line2Parts = line2.split(",");
+				
+				String meterName = line2Parts[0].trim().replace(":", "_");
+				
+				Resource sensormeter = meters.get(meterName);
+				if(sensormeter==null) {
+					sensormeter = model.createResource("http://iot.soton.ac.uk/smarthome/sensor#"+meterName);
+					meters.put(meterName, sensormeter);
 				}
+        		Resource obsMeter = model.createResource();
+        		Resource resultMeter = model.createResource();
+        		
+        		model.add(obsMeter,RDF.type,model.createResource("http://purl.oclc.org/NET/iot#EnergyObservation"));        		
+				model.add(obsMeter,model.createProperty("http://purl.oclc.org/NET/ssnx/ssn#observationResult"),resultMeter);
+				model.add(obsMeter,model.createProperty("http://purl.oclc.org/NET/ssnx/ssn#observedBy"),sensormeter);
 				
+				Resource valueMeter = model.createResource();
+				model.add(resultMeter,RDF.type,model.createResource("http://purl.oclc.org/NET/iot#EnergySensorOutput"));        		
+				model.add(resultMeter,model.createProperty("http://purl.oclc.org/NET/ssnx/ssn#hasValue"),valueMeter);
+				model.add(resultMeter,model.createProperty("http://purl.oclc.org/NET/ssnx/ssn#isProducedBy"),sensormeter);
+				
+				model.add(valueMeter,RDF.type,model.createResource("http://purl.oclc.org/NET/iot#EnergyValue"));        		
+				model.add(valueMeter,model.createProperty("http://purl.oclc.org/NET/iot#hasQuantityValue"),model.createLiteral(line2Parts[2].trim()));
+				
+        		line3=br3.readLine();
+				
+				String[] line3Parts = line3.split(",");
+				
+				String motionName = line3Parts[0].trim().replace(":corner", "_motion");
+				
+				Resource sensormotion = motions.get(motionName);
+				if(sensormotion==null) {
+					sensormotion = model.createResource("http://iot.soton.ac.uk/smarthome/sensor#"+motionName);
+					motions.put(motionName, sensormotion);
+				}
+        		Resource obsMotion = model.createResource();
+        		Resource resultMotion = model.createResource();
+        		
+        		model.add(obsMotion,RDF.type,model.createResource("http://purl.oclc.org/NET/iot#MotionObservation"));        		
+				model.add(obsMotion,model.createProperty("http://purl.oclc.org/NET/ssnx/ssn#observationResult"),resultMotion);
+				model.add(obsMotion,model.createProperty("http://purl.oclc.org/NET/ssnx/ssn#observedBy"),sensormotion);
+				
+				Resource valueMotion = model.createResource();
+				model.add(resultMotion,RDF.type,model.createResource("http://purl.oclc.org/NET/iot#MotionSensorOutput"));        		
+				model.add(resultMotion,model.createProperty("http://purl.oclc.org/NET/ssnx/ssn#hasValue"),valueMotion);
+				model.add(resultMotion,model.createProperty("http://purl.oclc.org/NET/ssnx/ssn#isProducedBy"),sensormotion);
+				
+				model.add(valueMotion,RDF.type,model.createResource("http://purl.oclc.org/NET/iot#MotionValue"));        		
+				model.add(valueMotion,model.createProperty("http://purl.oclc.org/NET/iot#hasQuantityValue"),model.createLiteral(line3Parts[2].trim()));
+        		
 				long startTime = System.currentTimeMillis();
 		        stream.stream(model);
 
@@ -155,7 +178,6 @@ public class testSmartHome {
 					e.printStackTrace();
 				}
 
-				count++;
 				int itemcount = 0;
 		        for(Mapping mapping:mappings) {
 		        	if(printCount) {
@@ -175,23 +197,24 @@ public class testSmartHome {
 		        	System.out.println(System.currentTimeMillis() - startTime);
 		        }
 		        Thread.sleep(sleepTime);
-			}
-			br.close();
+        	}
+        	br1.close();
+        	br2.close();
+        	br3.close();
 			System.exit(0);
 			
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		} 
     }
 
 	public static List<Node> toNodeList(ExecContext context, Mapping mapping) {
         List<Node> nodes = new ArrayList<Node>();
         for (Iterator<Var> vars = mapping.vars(); vars.hasNext();) {
     		Var v = vars.next();
-		
+
             final long id = mapping.get(v);
             if (id > 0) {
                 nodes.add(context.engine().decode(id));
