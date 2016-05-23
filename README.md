@@ -1,7 +1,7 @@
 # CQELS (Continuous Query Evaluation over Linked Data)
 
 This repository is a fork of <https://github.com/KMax/cqels> for the purpose of testing CQELS performance with [SRBench](https://www.w3.org/wiki/SRBench) on lightweight computers. 
-It was orginially forked from the CQELS respository on [Google Code](https://code.google.com/p/cqels/).
+It was originally forked from the CQELS respository on [Google Code](https://code.google.com/p/cqels/).
 
 ## Running SRBench
 
